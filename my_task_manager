@@ -391,6 +391,7 @@ def view_mine(curr_user):
                                         # with the delimiter ';'
                                         lines[line_num - 1] = \
                                         ';'.join(upd_line)
+                                        upd_tsk = lines[line_num - 1]
                                     # Write the updated content back
                                     # to the file
                                     with open(file_path, 'w') as file:
@@ -402,16 +403,17 @@ def view_mine(curr_user):
     The assigned task owner has been updated. 
     Please see your changes below\n""")
                                     print("*"*80)
-                                    upd_line = upd_line.split(";")
-                                    owner = f"Task Number:\t\t {upd_line[0]}\n"
-                                    owner += f"Task: \t\t\t {upd_line[1]}\n"
-                                    owner += f"Assigned to:\t\t {upd_line[2]}\n"
+                                    upd_tsk = upd_tsk.split(";")
+                                    owner = f"Task Number:\t\t {upd_tsk[0]}\n"
+                                    owner += f"Task: \t\t\t {upd_tsk[1]}\n"
+                                    owner += f"Assigned to:\t\t {upd_tsk[2]}\n"
                                     owner += f"Date Assigned: \t\t \
-                                        {upd_line[3]}\n"
-                                    owner += f"Due Date: \t\t {upd_line[4]}\n"
-                                    owner += f"Task Completed? \t {upd_line[5]}\n"
+                                        {upd_tsk[3]}\n"
+                                    owner += f"Due Date: \t\t {upd_tsk[4]}\n"
+                                    owner += f"Task Completed? \t \
+                                        {upd_tsk[5]}\n"
                                     owner += f"Task Description:\n\
-                                          {upd_line[6]}\n"                                  
+                                          {upd_tsk[6]}\n"                                  
                                     print(owner) 
                                     print("*"*80)
                                     break
