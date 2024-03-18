@@ -2,22 +2,26 @@
 # 1. Use the following username and password to access the admin rights 
 # username: admin
 # password: password
-# 2. Ensure you open the whole folder for this task in VS Code otherwise the 
-# program will look in your root directory for the text files.
+# 2. In VS code, also open the user.txt file that has been uploaded 
+# 3. When run, the task manager will initially create an empty task list
 
 #===========================IMPORTING LIBRARIES=================================
 import os
 from datetime import datetime, date
 
-DATETIME_STRING_FORMAT = "%Y-%m-%d"
+DATE = "%Y-%m-%d" # Date format
 
 #=============================FUNCTIONS SECTION=================================
 
 # FUNCTION 1 - REGISTER USER
 def reg_user(username_password):
-    '''Add a new user to the user.txt file'''
+    '''
+    Add a new user to the user.txt file
+    :param username_password: username and password combination of user
+    :type username_password: string
+    '''
     # Read in user_data
-    with open("capstone_two/user.txt", 'r') as user_file:
+    with open("user.txt", 'r') as user_file:
         user_data = user_file.read().split("\n")
 
         # Convert to a dictionary
@@ -28,11 +32,11 @@ def reg_user(username_password):
 
         while True: 
             new_username = input("New Username: ")
-            # Check if new_username is in text file, if so, ask for another username
-            with open ('capstone_two/user.txt', 'r+') as file:
-                lines = file.readlines()
+            # Check if new_username exists, if so, ask for new one
+            with open('user.txt', 'r+') as file:
+                file.readlines()
                 if new_username in username_password.keys():
-                    print ("Username already exists, please choose another username")
+                    print("Username already exists, choose another username")
                     continue
                 else:
                     # - Request input of a new password
@@ -41,35 +45,52 @@ def reg_user(username_password):
                     # - Request input of password confirmation.
                     confirm_password = input("Confirm Password: ")
 
-                    # - Check if the new password and confirmed password are the same.
+                    # - Check if new and confirmed password are same
                     if new_password == confirm_password:
-                        # - If they are the same, add them to the user.txt file,
+                        # - If same, add them to the user.txt file
                         print("New user added")
                         username_password[new_username] = new_password
                         
-                        with open("capstone_two/user.txt", "w") as out_file:
-                            user_data = []
+                        with open("user.txt", "w") as out_file:
+                            usr_data = []
                             for k in username_password:
-                                user_data.append(f"{k};{username_password[k]}")
-                            out_file.write("\n".join(user_data))
+                                usr_data.append(f"{k};{username_password[k]}")
+                            out_file.write("\n".join(usr_data))
                             break
 
-                    # - Otherwise you present a relevant message.
+                    # - Otherwise password doesn't match
                     else:
-                            print("Passwords do no match")
+                        print("Passwords do no match")
 
 
 # FUNCTION 2 - TASK NUMBER 
 def task_num():
-    '''Work out new task number by counting number of tasks and adding 1'''
-    with open("capstone_two/tasks.txt","r") as file:
+    '''
+    Work out new task number: count number of tasks and add 1
+    :return: the task number
+    :rtype: string
+    '''
+    with open("tasks.txt", "r") as file:
         task_num = (len(file.readlines())+1)
         return task_num
     
-# FUNCTION 3 - CREATE INITIAL TASK LIST
+
+# FUNCTION 3 - CREATE TASK LIST
 def open_tasklist():
-    # Open current task list     
-    with open("capstone_two/tasks.txt", 'r+') as task_file:
+    '''
+    Open task list or creat new one if one doesn't exist
+    :return: the task list
+    :rtype: string
+    '''
+    # Open current task list 
+    file_path = "tasks.txt"  
+    if not os.path.exists(file_path):  
+        # Set up task list template
+        default_file = open(file_path, "w+")
+        pass 
+        default_file.close()
+
+    with open(file_path, 'r+') as task_file:
         task_data = task_file.read().split("\n")
         task_data = [t for t in task_data if t != ""]
 
@@ -84,25 +105,27 @@ def open_tasklist():
         curr_t['username'] = task_components[2]
         curr_t['assigned_date'] = task_components[3]
         curr_t['due_date'] = task_components[4]
-        curr_t['completed'] = True if task_components[5] == "Yes" else "No"
+        curr_t['completed'] = task_components[5]
         curr_t['description'] = task_components[6]
 
         task_list.append(curr_t)
-        table = []
     return task_list  
 
-# FUNCTION 3 - ADD TASK
+
+# FUNCTION 4 - ADD TASK
 def add_task():
-    '''Allow a user to add a new task to task.txt file
+    '''
+    Allow a user to add a new task to task.txt file
                 Prompt a user for the following: 
-                - A username of the person whom the task is assigned to,
-                - A title of a task,
-                - A description of the task and 
-                - the due date of the task.'''
+                - Username of the person whom the task is assigned to
+                - Title of a task,
+                - Description of the task and 
+                - Due date of the task.
+    '''
     # Code for adding task
     task_list = open_tasklist()
-    task_file_path = "capstone_two/tasks.txt"
-    user_file_path = "capstone_two/user.txt"
+    task_file_path = "tasks.txt"
+    user_file_path = "user.txt"
     # Read user_data
     with open(user_file_path, 'r+') as user_file:
         user_data = user_file.read().split("\n")
@@ -114,14 +137,15 @@ def add_task():
             username_password[username] = password
 
         while True:
-            add_or_exit_task = input("Please confirm that you would like to add a new task (y/n)? ").lower()
+            add_or_exit_task = input("""Please confirm that you would like to 
+add a new task (y/n)? """).lower()
             if add_or_exit_task == 'n':
                 break
             elif add_or_exit_task == 'y':
                 while True:
-                    task_username = input("\nName of person assigned to task: \n")
+                    task_username = input("\nName of task owner: \n")
                     if task_username not in username_password.keys():
-                        print("User does not exist. Please enter a valid username\n")
+                        print("User does not exist. Enter a valid username\n")
                         continue
                     else:
                         task_number = str(task_num())
@@ -129,14 +153,13 @@ def add_task():
                         task_description = input("Description of Task: ")
                         while True:
                             try:
-                                task_due_date = input("Due date of task (YYYY-MM-DD): ")
+                                task_due = input("Task due date (YYYY-MM-DD): ")
                                 # Convert task due date into date object
-                                due_date_time = datetime.strptime(task_due_date, DATETIME_STRING_FORMAT)
+                                due_date = datetime.strptime(task_due, DATE)
                                 break
 
                             except ValueError:
                                 print("Invalid datetime format. Please use the format specified")
-
 
                         # Then get the current date.
                         curr_date = date.today()
@@ -147,12 +170,12 @@ def add_task():
                             "title": task_title,
                             "username": task_username,
                             "assigned_date": curr_date,
-                            "due_date": due_date_time,
+                            "due_date": due_date,
                             "completed": "No",
                             "description": task_description
                         }
                         task_list.append(new_task)
-                        with open(task_file_path, "w") as task_file:
+                        with open(task_file_path, "w+") as task_file:
                             task_list_to_write = []
                             for t in task_list:
                                 str_attrs = [
@@ -161,29 +184,28 @@ def add_task():
                                     t['username'],
                                     str(t['assigned_date']),
                                     str(t['due_date']),
-                                    "Yes" if t['completed'] else "No",
+                                    t['completed'],
                                     t['description']
                                 ]
                                 task_list_to_write.append(";".join(str_attrs))
-                            task_file.write("\n".join(task_list_to_write))
-                                
+                            task_file.write("\n".join(task_list_to_write))        
                         print("Task successfully added.")
-                        break
+                    break
             else:
                 print("Error. Please select y/n: ")
                 continue
 
-# FUNCTION 4 - VIEW ALL 
+
+# FUNCTION 5 - VIEW ALL 
 def view_all(task_list):
-    '''Reads the task from task.txt file and prints to the console in the 
-        format of Output 2 presented in the task pdf (i.e. includes spacing
-        and labelling) 
+    '''
+    Reads the tasks from task.txt file and shows all the tasks in file. 
+    :param task_list: current list of tasks
+    :type task_list: string
     '''
     # Code for viewing task list
     print("\nHere is the entire task list:\n")
-    # with open("tasks.txt", 'r') as task_file:
-    #     task_list = task_file.read().split("\n")
-    #     task_list = [t for t in task_list if t != ""]
+    task_list = open_tasklist()
 
     for t in task_list:
         disp_str = f"Task Number:\t\t {t['task_number']}\n"
@@ -195,9 +217,14 @@ def view_all(task_list):
         disp_str += f"Task Description: \n {t['description']}\n"
         print(disp_str)
         
-# FUNCTION 5 - CHANGE CURRENT LIST TO DISPLAY FORMAT
+
+# FUNCTION 6 - CHANGE CURRENT LIST TO DISPLAY FORMAT
 def display_task_list(task_list):
-    '''Changes current list format to more presentable format'''
+    '''
+    Changes current list format to more presentable format
+    :param task_list: current list of tasks
+    :type task_list: string
+    '''
     for t in task_list:
         disp_str = disp_str.split(";")
         disp_str = f"Task Number:\t\t {t[disp_str[0]]}\n"
@@ -208,37 +235,15 @@ def display_task_list(task_list):
         disp_str += f"Task Completed? \t {t[disp_str[5]]}\n"
         disp_str += f"Task Description: \n {t[disp_str[6]]}\n"
         print(disp_str)
-              
-              
-# FUNCTION 6 - READ TASKS FROM TEXT FILE   
-def read_tasks_from_file(filepath):
-    '''Read tasks from filepath (tasks.txt file) into a list of dictionaries'''
-    with open("capstone_two/tasks.txt", 'r') as task_file:
-        task_data = task_file.read().split("\n")
-        task_data = [t for t in task_data if t != ""]
 
-
-    task_list = []
-    for t_str in task_data:
-        curr_t = {}
-
-        # Split by semicolon and manually add each component
-        task_components = t_str.split(";")
-        curr_t['username'] = task_components[0]
-        curr_t['task_number'] = task_components[1]
-        curr_t['title'] = task_components[2]
-        curr_t['description'] = task_components[3]
-        curr_t['due_date'] = datetime.strptime(task_components[4], DATETIME_STRING_FORMAT)
-        curr_t['assigned_date'] = datetime.strptime(task_components[5], DATETIME_STRING_FORMAT)
-        curr_t['completed'] = True if task_components[6] == "Yes" else "No"
-
-        task_list.append(curr_t)
-        table = []
-    return task_list
 
 # FUNCTION 7 - DISPLAY CURRENT USER'S TASKLIST
 def user_tasklist(curr_user):
-    '''Display current user task list'''
+    '''
+    Display current user's task list
+    :param curr_user: username of current user
+    :type curr_user: string  
+    '''
     #Code for task list
     task_list = open_tasklist()
     print("\nThis is your current task list\n")
@@ -248,173 +253,215 @@ def user_tasklist(curr_user):
             disp_str = f"Task Number:\t\t {t['task_number']}\n"
             disp_str += f"Task: \t\t\t {t['title']}\n"
             disp_str += f"Assigned to:\t\t {t['username']}\n"
-            disp_str += f"Date Assigned: \t\t {t['assigned_date'].strftime(DATETIME_STRING_FORMAT)}\n"
-            disp_str += f"Due Date: \t\t {t['due_date'].strftime(DATETIME_STRING_FORMAT)}\n"
+            disp_str += f"Date Assigned: \t\t {t['assigned_date']}\n"
+            disp_str += f"Due Date: \t\t {t['due_date']}\n"
             disp_str += f"Task Completed? \t {t['completed']}\n"
             disp_str += f"Task Description: \n {t['description']}\n"
+            print("")
             print(disp_str)
             print("*"*80)
 
-# FUNCTION 8 - VIEW MINE
-def view_mine(task_list, curr_user):
-    '''Reads the task from task.txt file and prints to the console in the 
-           format of Output 2 presented in the task pdf (i.e. includes spacing
-           and labelling)
-        '''
-    # Display the current user's tasklist 
-    user_tasklist(curr_user=curr_user)
 
+# FUNCTION 8 - VIEW MINE
+def view_mine(curr_user):
+    '''
+    Selects the current user's task list and gives them the option to:
+     - mark a task as complete
+     - edit the task due date 
+     - change the owner of the selected task         
+    :param curr_user: username of current user
+    :type curr_user: string  
+    '''
     # Ask user to select specific task (by entering a task number) 
-    tasks = read_tasks_from_file('tasks.txt')
+    file_path = "tasks.txt"
+    # tasks = open_tasklist()
+    tasks = open_tasklist()
     curr_user == curr_user
     while True:
         user_tasklist(curr_user)
-        task_selection = input("""\nTo work on a task, please enter the task number
-or enter -1 to return to the main menu: """)
+        task_opt = input("""\nTo work on a task, please enter 
+    the task number or enter -1 to return to the main menu: """)
         '''if task selection is a number and present in task list,
             user can edit task or mark task as complete'''
-        if task_selection.isnumeric() and task_selection != "-1": 
+        if task_opt.isnumeric() and task_opt != "-1": 
             for task in tasks:
-                if task['username'] == curr_user and task['task_number'] == task_selection:
+                if task['username'] == curr_user and \
+                    task['task_number'] == task_opt:
                     print("\nHere is the task selected for editing:\n")
                    
                     # Display the task selected for editing
-                    disp_task_selected = f"Task Number:\t\t {task['task_number']}\n"
-                    disp_task_selected += f"Task: \t\t\t {task['title']}\n"
-                    disp_task_selected += f"Assigned to:\t\t {task['username']}\n"
-                    disp_task_selected += f"Date Assigned: \t\t {task['assigned_date'].strftime(DATETIME_STRING_FORMAT)}\n"
-                    disp_task_selected += f"Due Date: \t\t {task['due_date'].strftime(DATETIME_STRING_FORMAT)}\n"
-                    disp_task_selected += f"Task Completed? \t {task['completed']}\n"
-                    disp_task_selected += f"Task Description: \n {task['description']}\n"
-                    print(disp_task_selected) 
+                    disp_task = f"Task Number:\t\t {task['task_number']}\n"
+                    disp_task += f"Task: \t\t\t {task['title']}\n"
+                    disp_task += f"Assigned to:\t\t {task['username']}\n"
+                    disp_task += f"Date Assigned:\t\t\
+                        {task['assigned_date']}\n"
+                    disp_task += f"Due Date: \t\t {task['due_date']}\n"
+                    disp_task += f"Task Completed? \t {task['completed']}\n"
+                    disp_task += f"Task Description:\n\
+                        {task['description']}\n"
+                    print(disp_task) 
                     
                     while True:
-                        edit_or_signoff = input("""\nWhat would you like to do? Please select from the following option:
+                        edit_or_signoff = input("""\n
+        What would you like to do? 
+        Please select from the following option:
         C - to mark task as complete
         E - to edit task
         :""").upper()
                         # Mark task as complete if Option C is selected
                         if edit_or_signoff == "C":
-                            file_path = 'capstone_two/tasks.txt'
-                            line_number = int(task_selection)
-                            replacement_value = 'Yes'
+                            task['completed'] = "Yes"
+                            file_path = 'tasks.txt'
+                            line_num = int(task_opt)
+                            # Define replacement value
+                            new_val = "Yes"
 
                             # Open the tasks.txt file
-                            with open(file_path,"r") as file:
+                            with open(file_path, "r") as file:
                                 lines = file.readlines()
-                                # Update task selected, change 'completed' from 'no' to 'yes' 
-                                if line_number <= len(lines):
-                                    lines[line_number - 1] = lines[line_number - 1].replace('No', replacement_value)
-                                    completed_task = lines[line_number - 1]
-                                    # Write the updated content back to the file
+                                # Change task 'completed' to 'yes' 
+                                if line_num <= len(lines):
+                                    new_line = lines[line_num - 1].replace('No', new_val)
+                                    lines[line_num - 1] = new_line
+                                    # Define completed task
+                                    comp_task = lines[line_num - 1]
+                                    # Write new content back to file
                                     with open(file_path, 'w') as file:
                                         file.writelines(lines)
 
                             # Display the completed task 
-                            completed_task = completed_task.split(";")
-                            new_task_owner = f"Task Number:\t\t {completed_task[0]}\n"
-                            new_task_owner+= f"Task: \t\t\t {completed_task[1]}\n"
-                            new_task_owner += f"Assigned to:\t\t {completed_task[2]}\n"
-                            new_task_owner += f"Date Assigned: \t\t {completed_task[3]}\n"
-                            new_task_owner += f"Due Date: \t\t {completed_task[4]}\n"
-                            new_task_owner+= f"Task Completed? \t {completed_task[5]}\n"
-                            new_task_owner += f"Task Description: \n {completed_task[6]}\n"
+                            comp_task = comp_task.split(";")
+                            disp_tsk = f"Task Number:\t\t {comp_task[0]}\n"
+                            disp_tsk += f"Task: \t\t\t {comp_task[1]}\n"
+                            disp_tsk += f"Assigned to:\t\t {comp_task[2]}\n"
+                            disp_tsk += f"Date Assigned: \t\t \
+                                {comp_task[3]}\n"
+                            disp_tsk += f"Due Date: \t\t {comp_task[4]}\n"
+                            disp_tsk += f"Task Completed? \t {comp_task[5]}\n"
+                            disp_tsk += f"Task Description:\n \
+                                {comp_task[6]}\n"
                             print("""\nYour task has been marked complete. 
     Please see your changes below:\n""")
-                            print(new_task_owner) 
+                            print(disp_tsk) 
                             break    
 
 
-                        # Enable user to edit task if Option E is selected   
+                        # Enable user to edit task if Option E 
+                        # is selected   
                         elif edit_or_signoff == "E": 
                             # Task cannot be changed if marked complete
-                            if task['completed'] == "Yes" or task['completed'] == True: 
-                                print("Sorry, this task is complete and cannot be edited")
+                            if task['completed'] == "Yes": 
+                                print("\nError, this task is complete.")
                                 print("*"*80)
                                 break
                             else:
                                 task['completed'] == "No"
-                                # User can change name of task owner or task due date
+                                # User can change name of 
+                                # task owner or due date
                                 change_required = input("""
-        What change would you like to make? Please select from the following option:
+        What change would you like to make? 
+        Please select from the following option:
         U - change owner of assigned task
         D - change due date 
         : """).upper()
-                                # If user choose to change the task owner
+                                # If user chooses to change 
+                                # the task owner
                                 if change_required == "U":
-                                    new_user = input("Please enter the name of the new task owner: ")
+                                    new_user = input("Enter new task owner: ")
                                     task['username'] == new_user
-                                    file_path = 'capstone_two/tasks.txt'
-                                    line_number = int(task_selection)
-                                    update_value = new_user
+                                    file_path = 'tasks.txt'
+                                    line_num = int(task_opt)
+                                    # Define replacement value
+                                    upd_val = new_user
 
-
-                                    # Open the tasks.txt file, change result from no to yes
-                                    with open(file_path,"r") as file:
+                                    # Open file, change result to yes
+                                    with open(file_path, "r") as file:
                                         lines = file.readlines()
                                     # Change assigned taskowner
-                                    if line_number <= len(lines):
-                                        current_line = lines[line_number - 1]
-                                        updated_line = current_line.replace('admin', update_value)
-                                        lines[line_number - 1] = updated_line
-                                    # Write the updated content back to the file
+                                    if line_num <= len(lines):
+                                        curr_line = lines[line_num - 1]
+                                        # Split line using 
+                                        # the delimiter ';'
+                                        upd_line = \
+                                        curr_line.strip().split(";")
+                                        # Replace the item at index 
+                                        # position 2 with new value
+                                        upd_line[2] = upd_val
+                                        # Join list back into string
+                                        # with the delimiter ';'
+                                        lines[line_num - 1] = \
+                                        ';'.join(upd_line)
+                                    # Write the updated content back
+                                    # to the file
                                     with open(file_path, 'w') as file:
                                         file.writelines(lines)
-
-                                    # Display task with new assigned owner
-                                    print("""\nSuccess. The assigned task owner has been updated. 
-Please see your changes below\n""")
+                                    # Display task with new assigned 
+                                    # owner
+                                    print("""\n
+    Success. 
+    The assigned task owner has been updated. 
+    Please see your changes below\n""")
                                     print("*"*80)
-                                    updated_line = updated_line.split(";")
-                                    new_task_owner = f"Task Number:\t\t {updated_line[0]}\n"
-                                    new_task_owner += f"Task: \t\t\t {updated_line[1]}\n"
-                                    new_task_owner += f"Assigned to:\t\t {updated_line[2]}\n"
-                                    new_task_owner += f"Date Assigned: \t\t {updated_line[3]}\n"
-                                    new_task_owner += f"Due Date: \t\t {updated_line[4]}\n"
-                                    new_task_owner += f"Task Completed? \t {updated_line[5]}\n"
-                                    new_task_owner += f"Task Description: \n {updated_line[6]}\n"                                  
-                                    print(new_task_owner) 
+                                    upd_line = upd_line.split(";")
+                                    owner = f"Task Number:\t\t {upd_line[0]}\n"
+                                    owner += f"Task: \t\t\t {upd_line[1]}\n"
+                                    owner += f"Assigned to:\t\t {upd_line[2]}\n"
+                                    owner += f"Date Assigned: \t\t \
+                                        {upd_line[3]}\n"
+                                    owner += f"Due Date: \t\t {upd_line[4]}\n"
+                                    owner += f"Task Completed? \t {upd_line[5]}\n"
+                                    owner += f"Task Description:\n\
+                                          {upd_line[6]}\n"                                  
+                                    print(owner) 
                                     print("*"*80)
                                     break
                                 else:
-                                    # When user asks to change the task's due date
+                                    # To change the task's due date
                                     change_required == "D"
-                                    new_due_date = input("Please enter the new due date (YYYY-MM-DD): ").strftime(DATETIME_STRING_FORMAT)         
-                                    task['due_date'] == new_due_date 
-                                    file_path = 'capstone_two/tasks.txt'
-                                    line_number = int(task_selection)
+                                    new_date = input("""
+    Enter new due date (YYYY-MM-DD): """)        
+                                    task['due_date'] == new_date 
+                                    file_path = 'tasks.txt'
+                                    line_num = int(task_opt)
 
                                     # Read all lines from the file
                                     with open(file_path, 'r') as file:
                                         lines = file.readlines()
 
-                                    # Update task selection (line number) with the new date
-                                    if line_number <= len(lines):
-                                        current_line = lines[line_number - 1]
-                                        line_parts = current_line.split(';')
-                                        # Ensure that task has more than 4 components, Due Date is in index position 4
+                                    # Update task (line num) with 
+                                    # new date
+                                    if line_num <= len(lines):
+                                        curr_line = lines[line_num - 1]
+                                        line_parts = curr_line.split(';')
+                                        # Identify Due Date (index position 4)
                                         if len(line_parts) > 4: 
-                                            # New date to replace the existing date in index position 4 
-                                            line_parts[4] = new_due_date  # Update the date at index position 4
-                                            updated_line = ';'.join(line_parts)
-                                            lines[line_number - 1] = updated_line
+                                            # New date replaces existing date
+                                            line_parts[4] = new_date  
+                                            upt_line = ';'.join(line_parts)
+                                            lines[line_num - 1] = upt_line
 
-                                    # Write the updated content back to the file
+                                    # Write updated content back to 
+                                    # file
                                     with open(file_path, 'w') as file:
                                         file.writelines(lines)
                                 
                                     # Display task with new due date
-                                    print("""\nSuccess. Your task now has a new due date. 
-Please see your changes below\n""")
-                                    updated_line = updated_line.split(";")
-                                    task_due_date += f"Assigned to:\t\t {updated_line[0]}\n"
-                                    task_due_date = f"Task Number:\t\t {updated_line[1]}\n"
-                                    task_due_date += f"Task: \t\t\t {updated_line[2]}\n"
-                                    task_due_date += f"Task Description: \n {updated_line[3]}\n"
-                                    task_due_date += f"Due Date: \t\t {updated_line[4]}\n"
-                                    task_due_date += f"Date Assigned: \t\t {updated_line[5]}\n"
-                                    task_due_date += f"Task Completed? \t {updated_line[6]}\n"
-                                    print(task_due_date) 
+                                    print("""\n
+    Success. Your task now has a new due date. 
+    Please see your changes below\n""")
+                                    upt_line = upt_line.split(";")
+                                    date = f"Task Number:\t\t {upt_line[0]}\n"
+                                    date += f"Task: \t\t\t {upt_line[1]}\n"
+                                    date += f"Assigned to:\t\t\
+                                          {upt_line[2]}\n"
+                                    date += f"Date Assigned: \t\t\
+                                          {upt_line[3]}\n"
+                                    date += f"Due Date: \t\t {upt_line[4]}\n"
+                                    date += f"Task Completed? \t\
+                                          {upt_line[5]}\n"
+                                    date += f"Task Description: \n\
+                                          {upt_line[6]}\n"
+                                    print(date) 
                                     print("*"*80)
                                     break           
                         else:
@@ -422,40 +469,44 @@ Please see your changes below\n""")
                             continue   
                                
         #Return to Main menu if task selection is "-1"
-        elif task_selection == "-1":
+        elif task_opt == "-1":
             break
         else:
-            print("""Error, the task number you have selected does not exist
-                Please try again""")
-            continue
+            print("""Error, the task number you have selected does not exist.
+Please try again""")
+            break
 
 
 # FUNCTION 9 - DISPLAY STATISTICS OF TASKS AND USERS
 def display_stats(curr_user):
-    '''If the user is an admin they can display statistics about number of users
-            and tasks.'''
-    
+    '''
+    If the user is an admin they can display statistics 
+    about number of users and tasks.
+    :param curr_user: username of current user
+    :type curr_user: string  
+    '''
     if curr_user == "admin":
-        with open("capstone_two/user.txt", "r") as file:
+        with open("user.txt", "r") as file:
             num_users = len(file.readlines())
 
-        with open("capstone_two/tasks.txt", "r") as file:
+        with open("tasks.txt", "r") as file:
             num_tasks = len(file.readlines())
 
         print("-----------------------------------")
-        print('\33[1m'f"Welcome {curr_user}, here is your summary: \n"'\33[0m')
+        print('\33[1m'f"Welcome {curr_user}, your report summary: \n"'\33[0m')
         print(f"Number of users: \t\t {num_users}")
         print(f"Number of tasks: \t\t {num_tasks}")
         print("-----------------------------------")    
     else:
-        print(f"Sorry. Only admins can view statistics!")
+        print("Sorry. Only admins can view statistics!")
 
     # Generate the user and task overview reports
     generate_reports()
 
     # Display the user overview report
-    print('\33[1m'f"\nHere is your user overview report: \n"'\33[0m')
-    with open ("capstone_two/user_overview.txt", "r+", encoding='utf-8') as uo_file:
+    print('\33[1m'"\nHere is your user overview report: \n"'\33[0m')
+    user_file_path = "user_overview.txt"
+    with open(user_file_path, "r+", encoding='utf-8') as uo_file:
         for line in uo_file:
             # Replace tabs in text file with one space
             remove_tab = line.replace("\t","")
@@ -466,7 +517,8 @@ def display_stats(curr_user):
 
  # Display the task overview report
     print('\33[1m'"\nHere is your task overview report: \n"'\33[0m')
-    with open ("capstone_two/task_overview.txt", "r+", encoding='utf-8') as to_file:
+    task_file_path = "task_overview.txt"
+    with open(task_file_path, "r+", encoding='utf-8') as to_file:
         for line in to_file:
             # Replace tabs in text file with one space
             remove_tab = line.replace("\t","")
@@ -475,94 +527,113 @@ def display_stats(curr_user):
         print("-------------------------------------------")  
 
 
+# FUNCTION 10 -  GENERATE REPORTS
+def generate_reports(curr_user):
+    ''' 
+    Generate reports from task_overview.txt; and 
+    user_overview.txt files
+    '''
+    if curr_user != 'admin':
+        print("Sorry. Only admins can generate reports!")
+    else:
+        task_list = open_tasklist()
+        # Total tasks completed
+        tasks_completed = 0
+        # Total tasks uncompleted
+        tasks_uncompleted = 0
+        # Total tasks overdue
+        tasks_overdue = 0
+        # Today's date
+        today = datetime.now() 
+        # Convert today's date to a string
+        today = today.strftime('%Y-%m-%d')
 
-
-
-
-# FUNCTION 11 -  GENERATE REPORTS
-def generate_reports():
-    ''' Generate reports from task_overview.txt and user_overview.txt files'''
-    task_list = open_tasklist()
-    total_tasks_completed = 0
-    total_tasks_uncompleted = 0
-    total_tasks_overdue = 0
-    today = datetime. now() # Today's date
-
-    # Work out total tasks generated
-    with open ("capstone_two/tasks.txt", "r") as file:
-        total_tasks_generated = len(file.readlines())
-    
-    for t in task_list:
-        # Work out total tasks completed
-        if t['completed'] == 'yes'.lower():
-            total_tasks_completed += 1 
-        # Work out total tasks completed
-        elif t['completed'] == 'no'.lower():
-            total_tasks_uncompleted += 1
-        # Work out overdue tasks
-        else:
-            t['due_date']<today
-            total_tasks_overdue +=1
-
-    percentage_tasks_incomplete = ((total_tasks_uncompleted/total_tasks_generated)*100)
-    percentage_tasks_overdue = ((total_tasks_overdue/total_tasks_generated)*100)
-
-    with open ("capstone_two/task_overview.txt", "w+") as to_file:
-        to_file.write(f"The total number of tasks generated:\t\t {total_tasks_generated}\n")
-        to_file.write(f"The total number of tasks completed:\t\t {total_tasks_completed}\n")
-        to_file.write(f"The total number of incomplete tasks:\t\t {total_tasks_uncompleted}\n")
-        to_file.write(f"The total number of tasks overdue:\t\t\t {total_tasks_overdue}\n")
-        to_file.write(f"The percentage of incomplete tasks:\t\t\t {percentage_tasks_incomplete}%\n")
-        to_file.write(f"The percentage of tasks overdue:\t\t\t {percentage_tasks_overdue}%\n") 
-    
-    # Calculate total number of users and tasks
-    total_users = len(set(task['username'] for task in task_list))
-    total_tasks = len(task_list)
-
-    # Prepare data for user overview calculations
-    user_overviews = {}
-    for task in task_list:
-        username = task['username']
-
-        if username not in user_overviews:
-            user_overviews[username] = {
-                'total_tasks_assigned': 0,
-                'completed_tasks': 0,
-                'tasks_still_to_complete': 0,
-                'overdue_tasks': 0
-            }
-
-        user_overviews[username]['total_tasks_assigned'] += 1
-
-        if task['completed'] == 'Yes':
-            user_overviews[username]['completed_tasks'] += 1
-        else:
-            today = datetime. now()
-            if task['due_date'] < today:
-                user_overviews[username]['overdue_tasks'] += 1
+        # Work out total tasks generated
+        with open("tasks.txt", "r") as file:
+            tasks_generated = len(file.readlines())
+        
+        for t in task_list:
+            # Work out total tasks completed
+            if t['completed'] == 'Yes':
+                tasks_completed += 1 
+            # Work out total tasks completed
+            elif t['completed'] == 'No':
+                tasks_uncompleted += 1
+            # Work out overdue tasks
             else:
-                user_overviews[username]['tasks_still_to_complete'] += 1
+                t['due_date']<today
+                tasks_overdue +=1
 
-    # Write the user overview data to user_overview.txt
-    with open('capstone_two/user_overview.txt', 'w+') as uo_file:
-        uo_file.write(f"Total number of users registered:\t\t\t\t {total_users}\n")
-        uo_file.write(f"Total number of tasks generated and tracked:\t {total_tasks}\n")
-        uo_file.write("\n")
-        uo_file.write(f"Here is the breakdown of tasks for each user:\n")
-        uo_file.write("\n")
+        percent_incomplete = round(((tasks_uncompleted/tasks_generated)*100),2)
+        percent_overdue = round(((tasks_overdue/tasks_generated)*100),2)
 
-        for username, overview in user_overviews.items():
-            total_assigned = overview['total_tasks_assigned']
-            completed = overview['completed_tasks']
-            to_complete = overview['tasks_still_to_complete']
-            overdue = overview['overdue_tasks']
+        with open("task_overview.txt", "w+") as to_file:
+            to_file.write(f"Total tasks generated:\t\t {tasks_generated}\n")
+            to_file.write(f"Total tasks completed:\t\t {tasks_completed}\n")
+            to_file.write(f"Total tasks incomplete:\t\t {tasks_uncompleted}\n")
+            to_file.write(f"Total tasks overdue:\t\t {tasks_overdue}\n")
+            to_file.write(f"% Incomplete tasks:\t\t\t {percent_incomplete}%\n")
+            to_file.write(f"% Tasks overdue:\t\t\t {percent_overdue}%\n") 
+        
+        # Calculate total number of users and tasks
+        total_users = len(set(task['username'] for task in task_list))
+        total_tasks = len(task_list)
 
-            uo_file.write(f"User:\t\t\t\t\t\t\t\t\t\t\t {username}\n")
-            uo_file.write(f"Total tasks assigned:\t\t\t\t\t\t\t {total_assigned}\n")
-            uo_file.write(f"Percentage of total tasks assigned:\t\t\t\t {(total_assigned / total_tasks) * 100:.2f}%\n")
-            uo_file.write(f"Percentage of completed tasks:\t\t\t\t\t {(completed / total_assigned) * 100:.2f}%\n")
-            uo_file.write(f"Percentage of tasks still to complete:\t\t\t {(to_complete / total_assigned) * 100:.2f}%\n")
-            uo_file.write(f"Percentage of overdue tasks:\t\t\t\t\t {(overdue / total_assigned) * 100:.2f}%\n\n")
+        # Prepare data for user overview calculations
+        user_overviews = {}
+        for task in task_list:
+            username = task['username']
+
+            if username not in user_overviews:
+                user_overviews[username] = {
+                    'total_tasks_assigned': 0,
+                    'completed_tasks': 0,
+                    'tasks_still_to_complete': 0,
+                    'overdue_tasks': 0
+                }
+
+            user_overviews[username]['total_tasks_assigned'] += 1
+
+            if task['completed'] == 'Yes':
+                user_overviews[username]['completed_tasks'] += 1
+            else:
+                if task['due_date'] < today:
+                    user_overviews[username]['overdue_tasks'] += 1
+                else:
+                    user_overviews[username]['tasks_still_to_complete'] += 1
+
+        # Write the user overview data to user_overview.txt
+        with open('user_overview.txt', 'w+') as uo_file:
+            uo_file.write(f"Total users registered:\t\t\t\t {total_users}\n")
+            uo_file.write(f"Tasks generated and tracked:\t\t {total_tasks}\n")
+            uo_file.write("\n")
+            uo_file.write("Here is the breakdown of tasks for each user:\n")
+            uo_file.write("\n")
+
+            for username, overview in user_overviews.items():
+                assigned = overview['total_tasks_assigned']
+                completed = overview['completed_tasks']
+                to_complete = overview['tasks_still_to_complete']
+                overdue = overview['overdue_tasks']
+
+                percent_assigned = round(((assigned / total_tasks) * 100),2)
+                percent_complete = round(((completed / assigned) * 100),2)
+                per_incomp = round(((to_complete / assigned) * 100),2)
+                percent_overdue = round(((overdue / assigned) * 100),2)
+
+                uo_file.write(f"User:\t\t\t\t\t\t\t\t {username}\n")
+                uo_file.write(f"Total tasks assigned:\t\t\t\t {assigned}\n")
+                uo_file.write(f"% Tasks assigned:\t\t\t\t\t \
+                            {percent_assigned}%\n")
+                uo_file.write(f"% Completed tasks:\t\t\t\t\t\
+                            {percent_complete}%\n")
+                uo_file.write(f"% Tasks still to complete:\t\t\t\
+                            {per_incomp}%\n")
+                uo_file.write(f"% Overdue tasks:\t\t\t\t\t\
+                            {percent_overdue}%\n\n")
+        print("""\n
+            Success. 
+            Your task and user overiew reports have been generated!\n""")                
 
 #===================================MAIN PROGRAMME===========================    
 def main():
@@ -600,10 +671,8 @@ def main():
     while not logged_in:
 
         print("LOGIN")
-        curr_user = "admin"
-        curr_pass = "password"
-        # curr_user = input("Username: ")
-        # curr_pass = input("Password: ")
+        curr_user = input("Username: ")
+        curr_pass = input("Password: ")
         if curr_user not in username_password.keys():
             print("User does not exist")
             continue
@@ -616,15 +685,7 @@ def main():
 
     print(LINE)
 
-    # 2. Set up tasklist template
-    default_file = open("capstone_two/tasks.txt", "w+")
-    first_chars = "1;Add functionality to task manager;admin;"
-    second_chars = "2022-12-01;2022-11-22;No;"
-    third_chars = "Add additional options and refactor the code." 
-    default_file.writelines(first_chars+second_chars+third_chars+"\n")
-    default_file.close()
-
-    # 2. Call on current task list 
+    # 2. Read from task list 
     task_list = open_tasklist()
 
     # 3. Present user with menu options
@@ -660,13 +721,13 @@ def main():
                 
         elif menu == 'vm':
             print('\33[1m'"\nPlease see your tasks below:\n"'\33[0m')
-            view_mine(task_list=task_list, curr_user=curr_user)
+            view_mine(curr_user=curr_user)
             print(LINE)
 
         elif menu == 'gr':
-            generate_reports()
-            # Confirm that the task and user overview reports have been generated
-            print("\nSuccess. Your task and user overiew reports have been generated!\n")
+            generate_reports(curr_user=curr_user)
+            # Confirm that the task and user overview 
+            # reports have been generated
             print(LINE)
             
         elif menu == 'ds' and curr_user == 'admin': 
